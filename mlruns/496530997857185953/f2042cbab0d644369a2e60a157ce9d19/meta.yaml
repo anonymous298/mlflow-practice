@@ -1,0 +1,15 @@
+artifact_uri: file:///f:/My-Learning-Related-Stuffs/New_Learning/MLFlow-MLOps/mlruns/496530997857185953/f2042cbab0d644369a2e60a157ce9d19/artifacts
+end_time: 1733837755609
+entry_point_name: ''
+experiment_id: '496530997857185953'
+lifecycle_stage: active
+run_id: f2042cbab0d644369a2e60a157ce9d19
+run_name: RandomForestClassifier
+run_uuid: f2042cbab0d644369a2e60a157ce9d19
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1733837751956
+status: 3
+tags: []
+user_id: TALHA PC

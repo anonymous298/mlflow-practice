@@ -1,0 +1,15 @@
+artifact_uri: file:///f:/My-Learning-Related-Stuffs/New_Learning/MLFlow-MLOps/mlruns/496530997857185953/6687bb2493c14da18d7af21c34df94c3/artifacts
+end_time: 1733837742330
+entry_point_name: ''
+experiment_id: '496530997857185953'
+lifecycle_stage: active
+run_id: 6687bb2493c14da18d7af21c34df94c3
+run_name: SVC
+run_uuid: 6687bb2493c14da18d7af21c34df94c3
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1733837736668
+status: 3
+tags: []
+user_id: TALHA PC
