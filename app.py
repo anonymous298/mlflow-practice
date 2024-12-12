@@ -9,11 +9,18 @@ import dagshub
 
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+
+# For DAGSHUB
+dagshub.init(repo_owner='anonymous298', repo_name='mlflow-practice', mlflow=True)
 
 df = sns.load_dataset('titanic')
 
@@ -55,19 +62,15 @@ X_test = preprocessor.transform(X_test)
 #     'class_weight' : 'balanced'
 # }
 
-params = {
-    'solver': 'lbfgs',         # Algorithm to use in optimization
-    'penalty': 'l2',           # Regularization type ('l1', 'l2', 'elasticnet', 'none')
-    'C': 1.0,                  # Inverse of regularization strength; smaller values specify stronger regularization
-    'max_iter': 100,           # Maximum number of iterations taken for the solvers to converge
-    'class_weight': None,      # Weights associated with classes in the form {class_label: weight} or 'balanced'
-    'random_state': 42,        # Random state for reproducibility
-    'multi_class': 'auto',     # Strategy for multi-class classification ('auto', 'ovr', 'multinomial')
-    'verbose': 0,              # For verbosity in the solver
-    'tol': 1e-4,               # Tolerance for stopping criteria
-    'n_jobs': None,            # Number of CPUs used for parallel computation (if solver supports it)
-    'l1_ratio': None           # Elastic-net mixing parameter (only if `penalty='elasticnet'`)
-}
+# params = {
+#     'solver': 'lbfgs',         # Algorithm to use in optimization
+#     'penalty': 'l2',           # Regularization type ('l1', 'l2', 'elasticnet', 'none')
+#     'C': 1.0,                  # Inverse of regularization strength; smaller values specify stronger regularization
+#     'max_iter': 100,           # Maximum number of iterations taken for the solvers to converge
+#     'class_weight': None,      # Weights associated with classes in the form {class_label: weight} or 'balanced'
+#     'random_state': 42,        # Random state for reproducibility
+#             # Elastic-net mixing parameter (only if `penalty='elasticnet'`)
+# }
 
 def evaluate(actual, pred):
     accuracy = accuracy_score(y_test, y_pred)
@@ -80,46 +83,33 @@ def evaluate(actual, pred):
 mlflow.set_experiment('Titanic Model')
 # mlflow.set_tracking_uri('http://127.0.0.1:5000/')
 
-# For DAGSHUB
-dagshub.init(repo_owner='anonymous298', repo_name='mlflow-practice', mlflow=True)
+models = {
+    'Logistice Regression' : LogisticRegression(),
+    'Support Vector Classifier' : SVC(),
+    'KNeighborsClassifier' : KNeighborsClassifier(),
+    'Decision Tree' : DecisionTreeClassifier(),
+    'Random Forest' : RandomForestClassifier()
+}
 
-with mlflow.start_run():
+for model_name, model in models.items():
+    with mlflow.start_run(run_name=model_name):
+        model = model
+        model.fit(X_train, y_train)
 
-    mlflow.set_tags({
-    "dataset": "Titanic",
-    "model": "LogisticRegression",
-    "type": "Classification"
-})
+        y_pred = model.predict(X_test)
 
-    model = LogisticRegression()
-    model.set_params(**params)
+        accuracy, precision, recall, f1_sc = evaluate(y_test, y_pred)
 
-    model.fit(X_train, y_train)
+        mlflow.log_param('model', model_name)
 
-    y_pred = model.predict(X_test)
+        mlflow.log_metric('accuracy score', accuracy)
+        mlflow.log_metric('precision', precision)
+        mlflow.log_metric('recall', recall)
+        mlflow.log_metric('f1 score', f1_sc)
 
-    accuracy, precision, recall, f1_score = evaluate(y_test, y_pred)
+        predictions = model.predict(X_train)
+        signature = infer_signature(X_train, model.predict(X_train))
+        mlflow.sklearn.log_model(model, 'model', signature=signature, registered_model_name=f'{model_name}TitanicModel')
 
-    mlflow.log_params(params)
-
-    mlflow.log_metric('accuracy score', accuracy)
-    mlflow.log_metric('precision', precision)
-    mlflow.log_metric('recall', recall)
-    mlflow.log_metric('f1 score', f1_score)
-
-    predictions = model.predict(X_train)
-    signature = infer_signature(X_train, predictions)
-
-    tracking_url_type_store = urlparse(mlflow.get_tracking_uri()).scheme
-    print(mlflow.get_tracking_uri())
-
-    if tracking_url_type_store != 'file':
-
-        mlflow.sklearn.log_model(
-            model, 'model', registered_model_name='TitanicLogisticModel', signature=signature
-        )
-
-    else:
-        mlflow.sklearn.log_model(model, 'model', signature=signature)
-
+        
 
