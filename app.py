@@ -5,6 +5,7 @@ import seaborn as sns
 import mlflow
 from mlflow.models import infer_signature
 from urllib.parse import urlparse
+import dagshub
 
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
@@ -80,7 +81,6 @@ mlflow.set_experiment('Titanic Model')
 # mlflow.set_tracking_uri('http://127.0.0.1:5000/')
 
 # For DAGSHUB
-import dagshub
 dagshub.init(repo_owner='anonymous298', repo_name='mlflow-practice', mlflow=True)
 
 with mlflow.start_run():
@@ -111,6 +111,7 @@ with mlflow.start_run():
     signature = infer_signature(X_train, predictions)
 
     tracking_url_type_store = urlparse(mlflow.get_tracking_uri()).scheme
+    print(mlflow.get_tracking_uri())
 
     if tracking_url_type_store != 'file':
 
